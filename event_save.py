@@ -19,6 +19,7 @@ from collections import defaultdict
 data_prefix = "/new-pool"
 
 SEQ_SIZE = 30
+SEQ_LEN = 100000
 
 
 # @profile
@@ -36,43 +37,25 @@ def get_ev(f_data, ms_map, CHUNK_SIZE, i):
         ms_map[i * CHUNK_SIZE] : ms_map[(i + 1) * CHUNK_SIZE]
     ]
 
-    cut_pt = np.searchsorted(t_ev, t_ev[0] + 500000)
-
     block_id = x_ev // 32 + (y_ev // 32) * 40
 
-    cnts, bins = np.histogram(block_id[:cut_pt], np.arange(920))
+    cnts, bins = np.histogram(block_id, np.arange(920))
 
     ind = np.argpartition(cnts, -SEQ_SIZE)[-SEQ_SIZE:]
-    if cnts[ind[-1]] < 40000:
+    if cnts[ind[-1]] < 100000:
         return None, False
-    ev_out = np.zeros((SEQ_SIZE, 2, 50000, 4))
+    ev_out = np.zeros((SEQ_SIZE, SEQ_LEN, 4))
     for z in range(SEQ_SIZE):
         ev_seq = np.where(block_id == ind[z])[0]
-        cp = np.searchsorted(ev_seq, cut_pt)
+        evs = np.stack([x_ev[ev_seq], y_ev[ev_seq], p_ev[ev_seq], t_ev[ev_seq]]).T
 
-        bp = ev_seq[:cp]
-        ep = ev_seq[cp:]
-
-        beg_evs = np.stack([x_ev[bp], y_ev[bp], p_ev[bp], t_ev[bp]]).T
-        end_evs = np.stack([x_ev[ep], y_ev[ep], p_ev[ep], t_ev[ep]]).T
-
-        if bp.shape[0] > 50000:
-            rnd_idx = np.random.choice(beg_evs.shape[0], 50000, replace=False)
-            beg_evs = beg_evs[rnd_idx]
+        if evs.shape[0] > SEQ_LEN:
+            rnd_idx = np.random.choice(evs.shape[0], SEQ_LEN, replace=False)
+            evs = evs[np.sort(rnd_idx)]
         else:
-            beg_evs = np.pad(
-                beg_evs, ((0, 50000 - beg_evs.shape[0]), (0, 0)), mode="constant"
-            )
+            evs = np.pad(evs, ((0, SEQ_LEN - evs.shape[0]), (0, 0)), mode="constant")
 
-        if ep.shape[0] > 50000:
-            rnd_idx = np.random.choice(end_evs.shape[0], 50000, replace=False)
-            end_evs = end_evs[rnd_idx]
-        else:
-            end_evs = np.pad(
-                end_evs, ((0, 50000 - end_evs.shape[0]), (0, 0)), mode="constant"
-            )
-        ev_out[z, 0] = beg_evs
-        ev_out[z, 1] = end_evs
+        ev_out[z] = evs
 
     return ev_out, True
 
@@ -90,14 +73,14 @@ def convert_file(seq_name):
     f_exp = h5py.File(f"{data_prefix}/ev_list/m3ed/{seq_name}.h5", "w")
 
     # Create Max Shape Logic and Resize at the End!
-    CHUNK_SIZE = 1000
+    CHUNK_SIZE = 500
     ms_map = f_data["prophesee"]["left"]["ms_map_idx"][:]  # not going touse l=
     total_filts = ((len(ms_map) // CHUNK_SIZE) + 1) * SEQ_SIZE
     ev_set_h5 = f_exp.create_dataset(
         "events",
         dtype=np.float32,
-        shape=(total_filts, 2, 50000, 4),
-        chunks=(1, 2, 50000, 4),
+        shape=(total_filts, SEQ_LEN, 4),
+        chunks=(1, SEQ_LEN, 4),
         **hdf5plugin.Blosc2(cname="lz4", clevel=5, filters=hdf5plugin.Blosc.SHUFFLE),
     )
 
@@ -124,6 +107,7 @@ def run(args):
 
     # for i in range(len(files_ls)):
     # try:
+
     convert_file(files_ls[args.num])
     # except:
     #     print(f"Error on {i}")

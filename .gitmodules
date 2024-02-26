@@ -1,0 +1,3 @@
+[submodule "DeepSTPP"]
+	path = DeepSTPP
+	url = https://github.com/Rose-STL-Lab/DeepSTPP.git
