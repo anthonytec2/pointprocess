@@ -44,8 +44,8 @@ def run(cfg) -> None:
         num_sanity_val_steps=0,
         check_val_every_n_epoch=cfg.val_epochs,
         callbacks=[checkpoint_callback],
-        precision="16-mixed",
-        # limit_train_batches=0.01,
+        # precision="16-mixed",
+        limit_train_batches=1,
         # detect_anomaly=True
         # accumulate_grad_batches=1,
         # strategy=DDPStrategy(gradient_as_bucket_view=False, static_graph=True)

@@ -18,29 +18,30 @@ class PPDl(torch.utils.data.Dataset):
 
         self.events = h5_file["events"][:]
 
-        self.ev_len = np.where(np.sum(self.events, axis=(1, 2, 3)) < 1e-2)[0][
+        self.ev_len = np.where(np.sum(self.events, axis=(1, 2)) < 1e-2)[0][
             0
         ]  # len(self.events)
 
     def __getitem__(self, index):
-        evs = self.events[index, 0]
+        evs = self.events[index]
 
-        if evs[-1, 3] < 1e-2:
-            cut_pt = np.where(evs[:, 0] == 0)[0][0]
+        # if evs[-1, 3] < 1e-2:
+        #     cut_pt = np.where(evs[:, 0] == 0)[0][0]
 
-            evs[:cut_pt, 3] = (evs[:cut_pt, 3] - evs[0, 3]) / 5e5
-            evs[:, 2] = 0
-            evs[:cut_pt, 2] = 1
-        else:
-            evs[:, 3] = (evs[:, 3] - evs[0, 3]) / 5e5
-            evs[:, 2] = 1
+        #     evs[:cut_pt, 3] = (evs[:cut_pt, 3] - evs[0, 3]) / 5e5
+        #     evs[:, 2] = 0
+        #     evs[:cut_pt, 2] = 1
+        # else:
+
+        evs[:, 3] = (evs[:, 3] - evs[0, 3]) / 5e5
+        evs[:, 2] = 1
 
         evs[:, 0] = (evs[:, 0] % 32) / 32
         evs[:, 1] = (evs[:, 1] % 32) / 32
 
         return (
-            evs[:, 0].astype(np.uint8),
-            evs[:, 1].astype(np.uint8),
+            evs[:, 0].astype(np.float16),
+            evs[:, 1].astype(np.float16),
             evs[:, 3],
             evs[:, 2].astype(bool),
         )

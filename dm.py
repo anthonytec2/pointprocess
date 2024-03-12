@@ -19,7 +19,7 @@ class PPDataModule(pl.LightningDataModule):
         if stage == "test":
             self.shuf = False
         else:
-            self.shuf = True
+            self.shuf = False
         self.train_loader = PPDl(self.cfg, True)
         self.val_loader = PPDl(self.cfg, False)
 

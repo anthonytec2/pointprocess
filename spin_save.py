@@ -15,8 +15,8 @@ from tqdm import tqdm
 from collections import defaultdict
 
 
-SEQ_SIZE = 19000  # Sequences to be used in model
-TIME_LEN = 300  # How many ms to load in of data
+SEQ_SIZE = 18000  # Sequences to be used in model
+TIME_LEN = 500  # How many ms to load in of data
 PS = 32
 res = (480, 640)
 TOT_SAVE = 100  # Number of patches to use
@@ -40,15 +40,13 @@ def get_ev(f_data, ms_map, TIME_LEN, i):
 
     ev_out = np.zeros((TOT_SAVE, SEQ_SIZE, 4))
     cnt = 0
+    if cnts[ind[-1]] < SEQ_SIZE:
+        return None, False
     for z in range(TOT_SAVE):
         ev_seq = np.where(block_id == ind[z])[0]
         evs = np.stack([x_ev[ev_seq], y_ev[ev_seq], p_ev[ev_seq], t_ev[ev_seq]]).T
-
         if evs.shape[0] > SEQ_SIZE:
-            rnd_idx = np.random.choice(evs.shape[0], SEQ_SIZE, replace=False)
-            evs = evs[np.sort(rnd_idx)]
-        else:
-            evs = np.pad(evs, ((0, SEQ_SIZE - evs.shape[0]), (0, 0)), mode="constant")
+            evs = evs[:SEQ_SIZE]
 
         ev_out[cnt] = evs
         cnt += 1
@@ -91,7 +89,7 @@ def convert_file():
         ev_data, res = get_ev(f_data, ms_map, TIME_LEN, i)
         if res:
             ev_set_h5[idx : idx + len(ev_data)] = ev_data
-            idx += len(ev_data)
+        idx += len(ev_data)
 
     print(time.time() - st, idx)
     f_exp.close()
