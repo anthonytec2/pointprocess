@@ -5,8 +5,10 @@
 defaults:
   - _self_  
   - debug: null
+  - model: stcnn
   - override hydra/hydra_logging: disabled  
   - override hydra/job_logging: stdout  
+  
   
 hydra:  
   output_subdir: null  
@@ -20,31 +22,11 @@ data_dir: /new-pool
 train_file: /new-pool/ev_list/spinner/spin.h5 #/new-pool/ev_list/m3ed/car_urban_day_penno_big_loop.h5
 test_file: /new-pool/ev_list/spinner/spin.h5 #/new-pool/ev_list/m3ed/car_urban_day_penno_big_loop.h5
 batch_size:  64
-max_epochs: 20
+max_epochs: 200
 val_epochs: 120
 lr: 1e-3
-interval: 200
+interval: 30
 log_int: 40
 workers: 16
 comp: false
-
-d_conv: 4
-d_state: 32
-d_model: 3
-n_layer: 12
-expand: 2
-num_pts: 10000
 device: cuda
-
-exp: point_process
-
-# decoder_n_layer: 10
-# dropout: 0.2
-# num_head: 5
-# seq_len: 50000
-# z_dim: 2
-# nlayers: 5
-# num_points: 10
-# beta: .2
-# emb_dim: 60
-# hid_dim: 100

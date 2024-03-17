@@ -14,6 +14,7 @@ class PPDataModule(pl.LightningDataModule):
         super().__init__()
         self.batch_size = cfg.batch_size
         self.cfg = cfg
+        self.res = (32, 32)
 
     def setup(self, stage: str):
         if stage == "test":

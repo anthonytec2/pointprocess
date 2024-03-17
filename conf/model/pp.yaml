@@ -1,0 +1,16 @@
+# @package _global_
+
+d_conv: 4
+d_state: 32
+d_model: 3
+n_layer: 12
+expand: 2
+num_pts: 2000
+device: cuda
+z_dim: 3
+hid_dim: 32
+decoder_n_layer: 3
+seq_len: 10000
+exp: point_process
+model: pp
+norm: true

@@ -9,13 +9,21 @@ from lightning.pytorch.loggers import TensorBoardLogger
 from lightning.pytorch.strategies import DDPStrategy
 from torch.profiler import ProfilerActivity, profile, record_function
 from pp import PPModel
+from stcnn import STCNNModel
+from datawriter import DataWriter
+from ftcnn import FTCNNModel
 
 torch.backends.cudnn.benchmark = True
 
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def run(cfg) -> None:
-    model = PPModel(cfg)
+    if cfg.model == "pp":
+        model = PPModel(cfg)
+    elif cfg.model == "stcnn":
+        model = STCNNModel(cfg)
+    else:
+        model = FTCNNModel(cfg)
 
     # model = torch.compile(model, disable=cfg.comp)
 
@@ -23,7 +31,7 @@ def run(cfg) -> None:
 
     logger = TensorBoardLogger(
         "main",
-        name=f"pp",
+        name=cfg.model,
         version=cfg.exp,
     )
 
@@ -45,7 +53,7 @@ def run(cfg) -> None:
         check_val_every_n_epoch=cfg.val_epochs,
         callbacks=[checkpoint_callback],
         # precision="16-mixed",
-        limit_train_batches=1,
+        # limit_train_batches=1,
         # detect_anomaly=True
         # accumulate_grad_batches=1,
         # strategy=DDPStrategy(gradient_as_bucket_view=False, static_graph=True)
@@ -58,7 +66,7 @@ def run(cfg) -> None:
         dm.setup(stage="test")
 
         pred_writer = DataWriter(
-            total_data=(len(dm.val_loader), len(dm.train_loader)), res=dm.res, cfg=cfg
+            total_data=(len(dm.val_loader), len(dm.train_loader)), res=cfg.res, cfg=cfg
         )
         trainer.callbacks.append(pred_writer)
 

@@ -1,0 +1,9 @@
+# @package _global_
+num_pts: 2000
+seq_len: 10000
+exp: stcnn
+kernel: 11
+in_chan: 90
+hidden: 64
+model: stcnn
+norm: false

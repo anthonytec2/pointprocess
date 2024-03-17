@@ -1,0 +1,15 @@
+# @package _global_
+seq_len: 13000000
+exp: ftcnn
+kernel: 11
+hidden: 64
+model: ftcnn
+norm: false
+train_file: /new-pool/ev_list/spinner/train_spin_full.h5
+test_file: /new-pool/ev_list/spinner/val_spin_full.h5
+time_history: .24
+time_dt: .003
+end_time: .5
+res: [480,640]
+in_chan: 80
+multi: false
